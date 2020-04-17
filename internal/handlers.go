@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func (rt *Router) PostWatchlist(w http.ResponseWriter, r *http.Request) {
@@ -35,11 +36,17 @@ func (rt *Router) PostWatchlist(w http.ResponseWriter, r *http.Request) {
 func (rt *Router) DeleteWatchlist(w http.ResponseWriter, r *http.Request) {
 	login := r.Header.Get("X-Login")
 	movieID := r.Header.Get("X-IMDBId")
+	fromSeen, _ := strconv.ParseBool(r.Header.Get("X-Seen"))
+	fromUnseen, _ := strconv.ParseBool(r.Header.Get("X-Unseen"))
 
 	watchlist := GetWatchlist(login)
 
-	watchlist.SeenMovies = removeFromSlice(movieID, watchlist.SeenMovies)
-	watchlist.UnseenMovies = removeFromSlice(movieID, watchlist.UnseenMovies)
+	if fromSeen {
+		watchlist.SeenMovies = removeFromSlice(movieID, watchlist.SeenMovies)
+	}
+	if fromUnseen{
+		watchlist.UnseenMovies = removeFromSlice(movieID, watchlist.UnseenMovies)
+	}
 
 	if !UpdateWatchlist(&watchlist) {
 		log.Printf("RESP\tPOST\tcannot remove movie from watchlist, user %s, movie %s", watchlist.Login, movieID)
