@@ -15,5 +15,6 @@
   "base": "/v1/movie",
   "host": "127.0.0.1:7056",
   "scheme": "http",
-  "api_key": ""
+  "api_key": "1234567890abc",
+  "token": "6681759d63089c753fa1a49c9d82255fbc57d8a08e6f3ddca4183637505142c4"
 }
