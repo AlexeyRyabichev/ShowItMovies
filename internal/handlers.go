@@ -2,7 +2,6 @@ package internal
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -34,7 +33,21 @@ func (rt *Router) PostMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rt *Router) DeleteMovie(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
+	login := r.Header.Get("X-Login")
+	movieID := r.Header.Get("X-IMDBId")
+
+	watchlist := GetWatchlist(login)
+
+	watchlist.SeenMovies = removeFromSlice(movieID ,watchlist.SeenMovies)
+	watchlist.UnseenMovies = removeFromSlice(movieID ,watchlist.UnseenMovies)
+
+	if !UpdateWatchlist(&watchlist) {
+		log.Printf("RESP\tPOST\tcannot remove movie from watchlist, user %s, movie %s", watchlist.Login, movieID)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -44,4 +57,14 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func removeFromSlice(a string, list []string) []string {
+	for i, b := range list {
+		if b == a {
+			list[i] = list[len(list) - 1]
+			return list[:len(list) - 1]
+		}
+	}
+	return list
 }
