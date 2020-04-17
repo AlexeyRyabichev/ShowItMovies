@@ -72,7 +72,33 @@ func (rt *Router) GetWatchlist(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rt *Router) GetMovie(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	login := r.Header.Get("X-Login")
+	movieID := r.Header.Get("X-IMDBId")
+
+	watchlist := GetWatchlist(login)
+
+	movieInfo := MovieHTTP{
+		Login:    login,
+		Password: "",
+		IMDBId:   "",
+		Seen:     stringInSlice(movieID, watchlist.SeenMovies),
+		Unseen:   stringInSlice(movieID, watchlist.UnseenMovies),
+	}
+
+	js, err := json.Marshal(&movieInfo)
+	if err != nil {
+		log.Printf("ERR\tcannot parse movie to json, %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if bytes, err := w.Write(js); err != nil {
+		log.Printf("ERR\t%v", err)
+		http.Error(w, "ERR\tcannot write json to response: "+err.Error(), http.StatusInternalServerError)
+		return
+	} else {
+		log.Printf("RESP\tGET\twritten %d bytes in response", bytes)
+	}
 }
 
 func stringInSlice(a string, list []string) bool {
