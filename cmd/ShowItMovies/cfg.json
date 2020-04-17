@@ -1,7 +1,7 @@
 {
   "gateways": [
     {
-      "name": "Add movie to watchlist",
+      "name": "Add movie watchlist",
       "method": "POST",
       "path": "/watchlist"
     },
@@ -9,11 +9,22 @@
       "name": "Remove movie from watchlist",
       "method": "DELETE",
       "path": "/watchlist"
+    },
+    {
+      "name": "Get watchlist",
+      "method": "GET",
+      "path": "/watchlist"
+    },
+    {
+      "name": "Get movie info",
+      "method": "GET",
+      "path": "/"
     }
   ],
   "name": "Movies node",
   "base": "/v1/movie",
   "host": "127.0.0.1:7056",
   "scheme": "http",
-  "api_key": ""
+  "api_key": "",
+  "token": ""
 }
