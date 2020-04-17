@@ -4,6 +4,8 @@ type MovieHTTP struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 	IMDBId   string `json:"imdb_id"`
+	Seen     bool   `json:"seen"`
+	Unseen   bool   `json:"unseen"`
 }
 
 type MovieWatchlistHTTP struct {
