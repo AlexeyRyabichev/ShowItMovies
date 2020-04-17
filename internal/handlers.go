@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (rt *Router) PostMovie(w http.ResponseWriter, r *http.Request) {
+func (rt *Router) PostWatchlist(w http.ResponseWriter, r *http.Request) {
 	var movie MovieHTTP
 	if err := json.NewDecoder(r.Body).Decode(&movie); err != nil {
 		log.Printf("ERR\t%v", err)
@@ -17,7 +17,7 @@ func (rt *Router) PostMovie(w http.ResponseWriter, r *http.Request) {
 	watchlist := GetWatchlist(movie.Login)
 
 	if stringInSlice(movie.IMDBId, watchlist.SeenMovies) {
-		log.Printf("movie %s already in seen list for user %s", movie.IMDBId, movie.Login)
+		log.Printf("RESP\tPOST\tmovie %s already in seen list for user %s", movie.IMDBId, movie.Login)
 		w.WriteHeader(http.StatusConflict)
 		return
 	} else {
@@ -32,14 +32,14 @@ func (rt *Router) PostMovie(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (rt *Router) DeleteMovie(w http.ResponseWriter, r *http.Request) {
+func (rt *Router) DeleteWatchlist(w http.ResponseWriter, r *http.Request) {
 	login := r.Header.Get("X-Login")
 	movieID := r.Header.Get("X-IMDBId")
 
 	watchlist := GetWatchlist(login)
 
-	watchlist.SeenMovies = removeFromSlice(movieID ,watchlist.SeenMovies)
-	watchlist.UnseenMovies = removeFromSlice(movieID ,watchlist.UnseenMovies)
+	watchlist.SeenMovies = removeFromSlice(movieID, watchlist.SeenMovies)
+	watchlist.UnseenMovies = removeFromSlice(movieID, watchlist.UnseenMovies)
 
 	if !UpdateWatchlist(&watchlist) {
 		log.Printf("RESP\tPOST\tcannot remove movie from watchlist, user %s, movie %s", watchlist.Login, movieID)
@@ -47,6 +47,31 @@ func (rt *Router) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func (rt *Router) GetWatchlist(w http.ResponseWriter, r *http.Request) {
+	login := r.Header.Get("X-Login")
+
+	watchlist := GetWatchlist(login)
+
+	js, err := json.Marshal(&watchlist)
+	if err != nil {
+		log.Printf("ERR\tcannot parse watchlist to json, %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if bytes, err := w.Write(js); err != nil {
+		log.Printf("ERR\t%v", err)
+		http.Error(w, "ERR\tcannot write json to response: "+err.Error(), http.StatusInternalServerError)
+		return
+	} else {
+		log.Printf("RESP\tGET\twritten %d bytes in response", bytes)
+	}
+}
+
+func (rt *Router) GetMovie(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -62,8 +87,8 @@ func stringInSlice(a string, list []string) bool {
 func removeFromSlice(a string, list []string) []string {
 	for i, b := range list {
 		if b == a {
-			list[i] = list[len(list) - 1]
-			return list[:len(list) - 1]
+			list[i] = list[len(list)-1]
+			return list[:len(list)-1]
 		}
 	}
 	return list

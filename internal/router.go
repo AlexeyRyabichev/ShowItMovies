@@ -30,13 +30,25 @@ func NewRouter(cfg ShowItGate.NodeCfg) *Router {
 			Name:        "Add movie to watchlist",
 			Method:      "POST",
 			Pattern:     "/v1/movie/watchlist",
-			HandlerFunc: router.PostMovie,
+			HandlerFunc: router.PostWatchlist,
 		},
 		{
 			Name:        "Remove movie from watchlist",
 			Method:      "DELETE",
 			Pattern:     "/v1/movie/watchlist",
-			HandlerFunc: router.DeleteMovie,
+			HandlerFunc: router.DeleteWatchlist,
+		},
+		{
+			Name: "Get watchlist",
+			Method: "GET",
+			Pattern: "/v1/movie/watchlist",
+			HandlerFunc: router.GetWatchlist,
+		},
+		{
+			Name: "Get movie info",
+			Method: "GET",
+			Pattern: "/v1/movie",
+			HandlerFunc: router.GetMovie,
 		},
 	}
 	router.initRouter()
