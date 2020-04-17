@@ -17,17 +17,28 @@ func (rt *Router) PostWatchlist(w http.ResponseWriter, r *http.Request) {
 
 	watchlist := GetWatchlist(movie.Login)
 
-	if stringInSlice(movie.IMDBId, watchlist.SeenMovies) {
-		log.Printf("RESP\tPOST\tmovie %s already in seen list for user %s", movie.IMDBId, movie.Login)
-		w.WriteHeader(http.StatusConflict)
-		return
-	} else {
-		watchlist.SeenMovies = append(watchlist.SeenMovies, movie.IMDBId)
-		if !UpdateWatchlist(&watchlist) {
-			log.Printf("RESP\tPOST\tcannot add movie to seen watchlist, user %s, movie %s", watchlist.Login, movie.IMDBId)
-			w.WriteHeader(http.StatusInternalServerError)
+	if movie.Seen {
+		if stringInSlice(movie.IMDBId, watchlist.SeenMovies) {
+			log.Printf("RESP\tPOST\tmovie %s alreadмy in seen list for user %s", movie.IMDBId, movie.Login)
+			w.WriteHeader(http.StatusConflict)
 			return
 		}
+		watchlist.SeenMovies = append(watchlist.SeenMovies, movie.IMDBId)
+	}
+
+	if movie.Unseen {
+		if stringInSlice(movie.IMDBId, watchlist.UnseenMovies) {
+			log.Printf("RESP\tPOST\tmovie %s already in unseen list for user %s", movie.IMDBId, movie.Login)
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+		watchlist.UnseenMovies = append(watchlist.UnseenMovies, movie.IMDBId)
+	}
+
+	if !UpdateWatchlist(&watchlist) {
+		log.Printf("RESP\tPOST\tcannot add movie to seen watchlist, user %s, movie %s", watchlist.Login, movie.IMDBId)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -44,7 +55,7 @@ func (rt *Router) DeleteWatchlist(w http.ResponseWriter, r *http.Request) {
 	if fromSeen {
 		watchlist.SeenMovies = removeFromSlice(movieID, watchlist.SeenMovies)
 	}
-	if fromUnseen{
+	if fromUnseen {
 		watchlist.UnseenMovies = removeFromSlice(movieID, watchlist.UnseenMovies)
 	}
 
